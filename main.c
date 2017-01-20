@@ -30,7 +30,7 @@ main(int argc, char **argv)
     if (handle_builtin(c))
         goto done;
 
-    if(child = fork1()) {
+    if((child = fork1())) {
         while(wait1() != child)
             ;
     } else {

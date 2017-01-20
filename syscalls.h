@@ -15,7 +15,7 @@
 #include <sys/wait.h>
 #include <stdlib.h>
 
-int exec(char *p, char **argv);
+void exec(char *p, char **argv);
 int wait1(void);
 void exit1(void);
 

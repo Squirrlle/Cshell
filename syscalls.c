@@ -5,7 +5,7 @@
 
 #else
 
-int
+void
 exec(char *p, char **argv)
 {
   execvp(p, argv);

@@ -14,7 +14,7 @@ handle_builtin(struct cmd *c)
     if (strcmp(c->exec.argv[0], "echo") == 0) {
       for (int i = 1; ; i++)
         if (c->exec.argv[i])
-          io_printf(c->exec.argv[i]);
+          io_printf("%s", c->exec.argv[i]);
         else
           break;
       printf("\n");
@@ -40,7 +40,7 @@ exec_cmd(struct cmd *c)
   switch (c->tp)
   {
   case EXEC:
-    if(child = fork1()) {
+    if((child = fork1())) {
       while(wait1() != child) {
         /* Ignore spurious deaths */
       }
