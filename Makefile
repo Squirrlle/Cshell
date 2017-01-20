@@ -8,7 +8,7 @@ sh: $(OBJS) $(HDRS)
 	$(CC) $(CFLAGS) -Wl,-r -o sh.o $(OBJS)
 else
 sh: $(SRCS) $(HDRS)
-	$(CC) -std=c99 -D_XOPEN_SOURCE=700 -ggdb -O0 -o sh $(SRCS)
+	$(CC) -std=gnu99 -D_XOPEN_SOURCE=700 -ggdb -O0 -o sh $(SRCS)
 endif
 
 clean:
