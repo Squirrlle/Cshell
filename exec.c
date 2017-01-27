@@ -14,7 +14,7 @@ handle_builtin(struct cmd *c)
     if (strcmp(c->exec.argv[0], "echo") == 0) {
       for (int i = 1; ; i++)
         if (c->exec.argv[i])
-          io_printf("%s", c->exec.argv[i]);
+          io_printf("%s ", c->exec.argv[i]);
         else
           break;
       printf("\n");
