@@ -3,6 +3,7 @@
 
 struct cmd
 {
+  /* tp is a tag for the union so you know which case to handle */
   enum {EXEC, PIPE, LIST, REDIR, BACK} tp;
   union
   {
@@ -34,7 +35,7 @@ struct cmd
   };
 };
 
-/* NB: All of these will *own* the dynamic data given to them--you don't have
+/* Note: All of these will *own* the dynamic data given to them--you don't have
  * to worry about freeing them after using it as an argument to these
  * functions. However, you *do* have to worry about copying it if you need to,
  * because the data won't survive the lifetime of freeing a command. See
