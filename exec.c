@@ -1,9 +1,10 @@
 #include "shtypes.h"
 #include "syscalls.h"
+#include <dirent.h> 
 #include "io.h"
 //Very Jank History Implimentation 
 char *hist[100];
-struct cmd hs[100];
+struct cmd **hs;
 int pos = 0;
 
 int handle_builtin(struct cmd *c) /* c is the pointer to a cmd struct */
@@ -33,7 +34,7 @@ int handle_builtin(struct cmd *c) /* c is the pointer to a cmd struct */
       sprintf(temp, "echo %s", c->exec.argv[1]);
       puts(temp);
       hist[pos] = strdup(temp);
-      hs[pos] = *c;
+      hs[pos] = c;
       pos++;
       return 1;
 	  }
@@ -43,7 +44,7 @@ int handle_builtin(struct cmd *c) /* c is the pointer to a cmd struct */
       printf("%s", getcwd(cwdbuff, sizeof(cwdbuff)));
       printf("\n");
       hist[pos] = "pwd";
-      hs[pos] = *c;
+      hs[pos] = c;
       pos++;
       return 1;
 	  }
@@ -54,15 +55,40 @@ int handle_builtin(struct cmd *c) /* c is the pointer to a cmd struct */
       sprintf(temp, "cd %s", c->exec.argv[1]);
       puts(temp);
       hist[pos] = strdup(temp);
-      hs[pos] = *c;
+      print_cmd(c);
+      hs[pos] = c;
       pos++;
       return 1;
     }
+    else if (strcmp(c->exec.argv[0], "ls") == 0)
+    {
+      DIR *d;
+      struct dirent *dir;
+      d = opendir(".");
+      int spac = 0;
+      if (d) {
+        while ((dir = readdir(d)) != NULL) {
+          printf("%s\t", dir->d_name);
+          spac++;
+          if(spac >= 8){
+            printf("\n");
+            spac = 0;
+          }
+        }
+        printf("\n");
+        closedir(d);
+      }
+      hist[pos] = "ls";
+      hs[pos] = c;
+      pos++;     
+      return 1; 
+    }
+    
     else if (strcmp(c->exec.argv[0], "clear") == 0) 
     {
       system("clear");
       hist[pos] = "clear";
-      hs[pos] = *c;
+      hs[pos] = c;
       pos++;
       return 1;
     }
@@ -76,18 +102,22 @@ int handle_builtin(struct cmd *c) /* c is the pointer to a cmd struct */
         printf("%d %s\n", i, hist[i]);
       }
       hist[pos] = "history";
-      hs[pos] = *c;
+      hs[pos] = c;
       pos++;
       return 1;
     }
-    else if (strcmp(c->exec.argv[0], "!") == 0)
+    else if (c->exec.argv[0][0] == '!')
     {
-      if(c->exec.argv[1]){
+      if(c->exec.argv[0]){
         printf("Got here\n");
-        int temp = atoi(c->exec.argv[1]);
-        printf("%d\n", temp);
-        print_cmd(&hs[temp]);
-        handle_builtin(&hs[temp]);
+        int temp = atoi(c->exec.argv[0]+1);
+        printf("%d, going to yeet %p\n", temp, hs[temp]);
+        struct cmd* old_cmd = hs[temp];
+        old_cmd->tp;
+        print_cmd(old_cmd);
+        if(execvp(hs[temp]->exec.argv[0], hs[temp]->exec.argv)){
+          return 1;
+        }
       }
       return 1;
     }
@@ -191,10 +221,31 @@ int exec_cmd(struct cmd *c)
 	{
 		int pipefds[2];
 		pipe(pipefds);
+    int p;
+    pid_t pt = fork();
+    if (pt < 0){
+      printf("Fork Failed\n");
+      return -1;
+    }
+    if(pt == 0){
+      close(pipefds[1]);
+      dup2(pipefds[0], 0);
+      if(execvp(c->pipe.right->exec.argv[0], c->pipe.right->exec.argv)){
+        return 1;
+      }
+    }
+    else
+    {
+      close(pipefds[0]);
+      dup2(pipefds[1], 1);
+      if(execvp(c->pipe.left->exec.argv[0], c->pipe.left->exec.argv)){
+        return 1;
+      } 
+    }
 		/* At this point, pipefds[0] is a read-only FD, and pipefds[1] is a
 		 * write-only FD. Make *absolutely sure* you close all instances of
 		 * pipefds[1] in processes that aren't using it, or the reading child
-		 * will never know when it needs to terminate! */
+		 * will never know when it needs to terminate! */ 
 	}
     break;
 

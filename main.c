@@ -5,11 +5,14 @@
 #include "exec.h" // functions that handle built-ins and run programs (execvp)
 #include "syscalls.h" // import more syscalls and define fork1
 
+extern struct cmd** hs;
+
 /*argc : number of argumnets, argv : the arguments itself */
 int main(int argc, char **argv)
 {
   struct cmd *c; // pointer to a command struct
   int child; // child process pid
+  hs = (struct cmd **)malloc(100 * sizeof(struct cmd *));
 
   /* already written: Prints out a banner telling the user about the shell.*/
   printf("simple sh, " __DATE__ " " __TIME__ "\nPress control+C or control+D to exit.\n");
