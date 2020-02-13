@@ -229,6 +229,23 @@ int exec_cmd(struct cmd *c)
    //descriptor you are going to redirect with (STDIN or STDOUR), the path 
    //is the file you need to open for redirecting, the mode is how to open
    //the file you are going to use, and the cmd field is what command to run
+  {  
+    pid_t pt = fork();
+    if(pt  < 0){
+      printf("Fork Failed\n");
+      return -1;
+    }
+    else if (pt == 0) {
+      int fd = open(c->redir.path, c->redir.mode);
+      dup2(c->redir.fd, fd);
+      close(fd);
+      close(c->redir.fd);
+      if (execvp(c->exec.argv[0], c->exec.argv) < 0) {
+        printf("*** ERROR: exec failed\n");
+        return -1;
+      }
+    }
+  }
     break;
 
   case BACK:
