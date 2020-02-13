@@ -4,8 +4,8 @@
 #include "parser.h" //consumes tokens and creates command structs
 #include "exec.h" // functions that handle built-ins and run programs (execvp)
 #include "syscalls.h" // import more syscalls and define fork1
+extern struct cmd **hs;
 
-extern struct cmd** hs;
 
 /*argc : number of argumnets, argv : the arguments itself */
 int main(int argc, char **argv)

@@ -12,7 +12,6 @@ int handle_builtin(struct cmd *c) /* c is the pointer to a cmd struct */
   /* already written : make sure c parsed properly and if not return 0 */
   if (!c)
     return 0;
-
   /* already written : tp is the type of the command, like Redir, background, 
   exec, list, or pipe (shtypes.h) */
   switch (c->tp) /* tp is the field out of the struct that we are pointing to (using the ->) */
@@ -34,7 +33,6 @@ int handle_builtin(struct cmd *c) /* c is the pointer to a cmd struct */
       sprintf(temp, "echo %s", c->exec.argv[1]);
       puts(temp);
       hist[pos] = strdup(temp);
-      hs[pos] = c;
       pos++;
       return 1;
 	  }
@@ -44,7 +42,6 @@ int handle_builtin(struct cmd *c) /* c is the pointer to a cmd struct */
       printf("%s", getcwd(cwdbuff, sizeof(cwdbuff)));
       printf("\n");
       hist[pos] = "pwd";
-      hs[pos] = c;
       pos++;
       return 1;
 	  }
@@ -55,40 +52,13 @@ int handle_builtin(struct cmd *c) /* c is the pointer to a cmd struct */
       sprintf(temp, "cd %s", c->exec.argv[1]);
       puts(temp);
       hist[pos] = strdup(temp);
-      print_cmd(c);
-      hs[pos] = c;
       pos++;
       return 1;
-    }
-    else if (strcmp(c->exec.argv[0], "ls") == 0)
-    {
-      DIR *d;
-      struct dirent *dir;
-      d = opendir(".");
-      int spac = 0;
-      if (d) {
-        while ((dir = readdir(d)) != NULL) {
-          printf("%s\t", dir->d_name);
-          spac++;
-          if(spac >= 8){
-            printf("\n");
-            spac = 0;
-          }
-        }
-        printf("\n");
-        closedir(d);
-      }
-      hist[pos] = "ls";
-      hs[pos] = c;
-      pos++;     
-      return 1; 
-    }
-    
+    }  
     else if (strcmp(c->exec.argv[0], "clear") == 0) 
     {
       system("clear");
       hist[pos] = "clear";
-      hs[pos] = c;
       pos++;
       return 1;
     }
@@ -102,7 +72,6 @@ int handle_builtin(struct cmd *c) /* c is the pointer to a cmd struct */
         printf("%d %s\n", i, hist[i]);
       }
       hist[pos] = "history";
-      hs[pos] = c;
       pos++;
       return 1;
     }
@@ -115,12 +84,12 @@ int handle_builtin(struct cmd *c) /* c is the pointer to a cmd struct */
         struct cmd* old_cmd = hs[temp];
         old_cmd->tp;
         print_cmd(old_cmd);
-        if(execvp(hs[temp]->exec.argv[0], hs[temp]->exec.argv)){
+        if(handle_builtin(hs[temp])){
           return 1;
         }
       }
       return 1;
-    }
+    } 
     else if (strcmp(c->exec.argv[0], "kill") == 0) 
     {
       return 1;

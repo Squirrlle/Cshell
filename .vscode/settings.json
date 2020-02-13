@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "shtypes.h": "c",
+        "syscalls.h": "c"
+    }
+}
