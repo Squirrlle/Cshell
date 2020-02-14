@@ -5,7 +5,10 @@
 #include "exec.h" // functions that handle built-ins and run programs (execvp)
 #include "syscalls.h" // import more syscalls and define fork1
 extern struct cmd **hs;
+extern struct Node* head;
+extern int nj;
 
+extern int addNode(struct Node* n);
 
 /*argc : number of argumnets, argv : the arguments itself */
 int main(int argc, char **argv)
@@ -13,6 +16,9 @@ int main(int argc, char **argv)
   struct cmd *c; // pointer to a command struct
   int child; // child process pid
   hs = (struct cmd **)malloc(100 * sizeof(struct cmd *));
+  head = NULL;
+  head = (struct Node*)calloc(1, sizeof(struct Node));
+  head->next = NULL;
 
   /* already written: Prints out a banner telling the user about the shell.*/
   printf("simple sh, " __DATE__ " " __TIME__ "\nPress control+C or control+D to exit.\n");
@@ -56,6 +62,17 @@ int main(int argc, char **argv)
 		/* already written: This block runs in the child. runs exec_cmd and 
     exits with the return value of exec_cmd, supposed to return 0 */
     /* Note : you need to fill in the implementation of exec_cmd inside exec.c */
+        if(c->tp == BACK){
+          struct Node* n = NULL;
+          n  = (struct Node*)calloc(1, sizeof(struct Node));
+          n->pid = nj;
+          nj++;
+          char *tmp;
+          printf(tmp, "%s", c->exec.argv[0]);
+          n->pro = tmp;
+          n->next = NULL;
+          addNode(n);
+        }
         exit(exec_cmd(c));
     }
 

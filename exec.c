@@ -2,10 +2,35 @@
 #include "syscalls.h"
 #include <dirent.h> 
 #include "io.h"
+#include "exec.h"
 //Very Jank History Implimentation 
 char *hist[100];
 struct cmd **hs;
 int pos = 0;
+int pd = 0;
+extern struct Node* head;
+pid_t jbs[100];
+int nj = 0;
+
+int addNode(struct Node* n){
+  struct Node* temp = head;
+  while (temp->next != NULL)
+  {
+    temp = temp->next;
+  }
+  temp->next = n;
+  return 0;
+}
+
+int printNode(){
+  struct Node* temp = head;
+  while (temp->next != NULL)
+  {
+    temp = temp->next;
+    printf("%d\t%s\n", temp->pid, temp->pro);
+  }
+  return 0;
+}
 
 int handle_builtin(struct cmd *c) /* c is the pointer to a cmd struct */
 {
@@ -64,6 +89,13 @@ int handle_builtin(struct cmd *c) /* c is the pointer to a cmd struct */
     }
     else if (strcmp(c->exec.argv[0], "jobs") == 0) 
     {
+      struct Node* temp = head;
+      printf("Got here\n");
+      //if(printNode()){}
+      pid_t tp;
+      printNode();
+      hist[pos] = "jobs";
+      pos++;
       return 1;
     }
     else if (strcmp(c->exec.argv[0], "history") == 0) 
@@ -111,13 +143,17 @@ int handle_builtin(struct cmd *c) /* c is the pointer to a cmd struct */
     /* exit command already written */ 
     else if (strcmp(c->exec.argv[0], "exit") == 0) 
     {
+      int status;
+      pid_t w;
+      while((w = waitpid(-1, &status, WNOHANG)) > 0){
+        printf("Waiting on process to end\n");
+      }
 		  int code = 0;
 		  if(c->exec.argv[1]) {
-			code = atoi(c->exec.argv[1]);
-		}
-		exit(code); /* kills your process and returns code */
-    } 
-    // TODO for students: implement jobs
+			  code = atoi(c->exec.argv[1]);
+		  }
+	  	exit(code); /* kills your process and returns code */
+    }
     // TODO for students: implement kill
     else {
       return 0;
@@ -156,7 +192,7 @@ int exec_cmd(struct cmd *c)
   /* don't try to execute a command if parsing failed. */
   if (!c)
     return -1;
-
+  
   int child;
 
   switch (c->tp)
@@ -231,26 +267,41 @@ int exec_cmd(struct cmd *c)
    //the file you are going to use, and the cmd field is what command to run
   {  
     pid_t pt = fork();
-    if(pt  < 0){
+    if (pt < 0){
       printf("Fork Failed\n");
       return -1;
     }
-    else if (pt == 0) {
-      int fd = open(c->redir.path, c->redir.mode);
-      dup2(c->redir.fd, fd);
+    if (pt == 0) {
+      int fd = open(c->redir.path, c->redir.mode, 0777);
+      dup2(fd, c->redir.fd);
       close(fd);
-      close(c->redir.fd);
-      if (execvp(c->exec.argv[0], c->exec.argv) < 0) {
-        printf("*** ERROR: exec failed\n");
-        return -1;
-      }
+      exit(exec_cmd(c->redir.cmd));
     }
+    int t;
+    while (wait(&t) != pt){}
+    return 1;   
   }
     break;
 
   case BACK:
 	/* TODO for students: This should be easy--what's something you can remove from EXEC to have
 	 * this function return before the child exits? */
+  {
+    struct Node* n = NULL;
+    n = (struct Node*)calloc(1, sizeof(struct Node));
+    n->pid = 0;
+    n->pro = "cmd";
+    if (addNode(n)){}
+    pid_t pt = fork();
+    jbs[nj++] = pt;
+    if (pt < 0){
+      printf("Fork Failed\n");
+      return -1;
+    }
+    if (pt == 0) {
+      exit(exec_cmd(c->back.cmd));
+    }
+  }
     break;
 
   default:
