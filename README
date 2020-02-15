@@ -1,7 +1,9 @@
 Not Working:
   Repeating comands with the ! comand
-  Jobs
   Kill
+
+Not Fully Working:
+  Jobs Doesn't display name of process
 
 Refrences:
   Stack Overflow

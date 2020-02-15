@@ -90,7 +90,6 @@ int handle_builtin(struct cmd *c) /* c is the pointer to a cmd struct */
     else if (strcmp(c->exec.argv[0], "jobs") == 0) 
     {
       struct Node* temp = head;
-      printf("Got here\n");
       //if(printNode()){}
       pid_t tp;
       printNode();

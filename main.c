@@ -38,6 +38,17 @@ int main(int argc, char **argv)
   {
     c = parse();
 	  print_cmd(c);
+    if(c->tp == BACK){
+          struct Node* n = NULL;
+          n  = (struct Node*)calloc(1, sizeof(struct Node));
+          n->pid = nj;
+          nj++;
+          char *tmp;
+          strcmp(tmp, c->exec.argv);
+          n->pro = tmp;
+          n->next = NULL;
+          addNode(n);
+    }
 
     /* Note: you need to complete the implementation of this function inside exec.c
     built-ins need to be handled by the shell process */
@@ -62,18 +73,7 @@ int main(int argc, char **argv)
 		/* already written: This block runs in the child. runs exec_cmd and 
     exits with the return value of exec_cmd, supposed to return 0 */
     /* Note : you need to fill in the implementation of exec_cmd inside exec.c */
-        if(c->tp == BACK){
-          struct Node* n = NULL;
-          n  = (struct Node*)calloc(1, sizeof(struct Node));
-          n->pid = nj;
-          nj++;
-          char *tmp;
-          printf(tmp, "%s", c->exec.argv[0]);
-          n->pro = tmp;
-          n->next = NULL;
-          addNode(n);
-        }
-        exit(exec_cmd(c));
+      exit(exec_cmd(c));
     }
 
 done:
